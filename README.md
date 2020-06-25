@@ -13,7 +13,7 @@ Stop worrying about `-ldflags` and **`go get github.com/ahmetb/govvv`** now.
 | **`main.GitCommit`** | short commit hash of source tree | `0b5ed7a` |
 | **`main.GitBranch`** | current branch name the code is built off | `master` |
 | **`main.GitState`** | whether there are uncommitted changes | `clean` or `dirty` | 
-| **`main.GitSummary`** | output of `git describe --tags --dirty --always` | `v1.0.0`, <br/>`v1.0.1-5-g585c78f-dirty`, <br/> `fbd157c` |
+| **`main.GitSummary`** | Current tag/commit if missing | `v1.0.0`, <br/>`v1.0.1-5-dirty`, <br/> `fbd157c`, <br/> `fbd157c-dirty` |
 | **`main.BuildDate`** | RFC3339 formatted UTC date | `2016-08-04T18:07:54Z` |
 | **`main.Version`** | contents of `./VERSION` file, if exists, or the value passed via the `-version` option | `2.0.0` |
 
