@@ -29,14 +29,27 @@ func (g git) Commit() (string, error) {
 	return g.exec("rev-parse", "--short", "HEAD")
 }
 
+// isStateDirty returns true if the repository's state is diry
+func (g git) isStateDirty() (bool, error) {
+	out, err := g.exec("status", "--porcelain")
+	if err != nil {
+		return false, err
+	}
+	if len(out) > 0 {
+		return true, nil
+	}
+
+	return false, nil
+}
+
 // State returns the repository state indicating whether
 // it is "clean" or "dirty".
 func (g git) State() (string, error) {
-	out, err := g.exec("status", "--porcelain")
+	isDirty, err := g.isStateDirty()
 	if err != nil {
 		return "", err
 	}
-	if len(out) > 0 {
+	if isDirty {
 		return "dirty", nil
 	}
 	return "clean", nil
@@ -54,11 +67,24 @@ func (g git) Branch() string {
 	return out
 }
 
-// Summary returns the output of "git describe --tags --dirty --always".
+// Summary returns the tag that the current commit has, or the commit hash otherwise.
+// If the working directory is not clean, it appends the return value with "-dirty"
 func (g git) Summary() (string, error) {
-	out, err := g.exec("describe", "--tags", "--dirty", "--always")
-	if err != nil {
-		return "", err
+	// see if we have a tag to use as the prefix
+	id, err := g.exec("describe", "--tags", "--exact-match", "--always")
+	if err != nil || id == "" {
+		// we'll assume the error is because there is no tag on this commit
+		// let's now try to use the commit hash as the id
+		id, err = g.Commit()
+		if err != nil {
+			return "", err
+		}
 	}
-	return out, err
+
+	dirty, err := g.isStateDirty()
+	if err != nil || !dirty { // in case of error, we'll not declare it dirty
+		return id, nil
+	}
+
+	return id + "-dirty", nil
 }
